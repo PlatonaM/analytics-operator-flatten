@@ -67,6 +67,7 @@ public class Flatten extends BaseOperator {
             } else {
                 data = new Gson().fromJson(message.getInput("data").getString(), new TypeToken<LinkedList<LinkedTreeMap<String, ?>>>(){}.getType());
             }
+            System.out.println("received message with '" + data.size() + "' data points");
             for (Map<String, Object> msg : data) {
                 for (String rootField : fieldBuilder.rootFields()) {
                     if (msg.get(rootField) != null) {
