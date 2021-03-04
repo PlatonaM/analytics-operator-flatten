@@ -86,8 +86,9 @@ public class Flatten extends BaseOperator {
                 }
             }
             outputMessage(message, data, metaData);
-        } catch (NoValueException | IOException e) {
-            e.printStackTrace();
+        } catch (Throwable t) {
+            System.out.println("error handling message:");
+            t.printStackTrace();
         }
     }
 
