@@ -16,10 +16,13 @@
 
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import org.infai.ses.senergy.operators.BaseOperator;
 import org.infai.ses.senergy.operators.Message;
+import util.Deserializer;
+import util.Util;
 
 import java.io.IOException;
 import java.util.*;
@@ -56,11 +59,15 @@ public class Flatten extends BaseOperator {
         Set<String> fields = new HashSet<>();
         try {
             String metaData = message.getInput("meta_data").getString();
+            GsonBuilder builder = new GsonBuilder();
+            builder.registerTypeAdapter(Map.class, new Deserializer.MapDeserializer());
+            builder.registerTypeAdapter(List.class, new Deserializer.ListDeserializer());
+            Gson gson = builder.create();
             if (compressedInput) {
-                data = new Gson().fromJson(Util.decompress(message.getInput("data").getString()), new TypeToken<LinkedList<LinkedTreeMap<String, ?>>>() {
+                data = gson.fromJson(Util.decompress(message.getInput("data").getString()), new TypeToken<List<Map<String, Object>>>() {
                 }.getType());
             } else {
-                data = new Gson().fromJson(message.getInput("data").getString(), new TypeToken<LinkedList<LinkedTreeMap<String, ?>>>() {
+                data = gson.fromJson(message.getInput("data").getString(), new TypeToken<List<Map<String, Object>>>() {
                 }.getType());
             }
             System.out.println("received message with '" + data.size() + "' data points");
