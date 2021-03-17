@@ -79,7 +79,7 @@ public class Flatten extends BaseOperator {
             }
             for (Map<String, Object> msg : data) {
                 for (String field : fields) {
-                    msg.putIfAbsent(field, null);
+                    msg.putIfAbsent(field, 0);
                 }
             }
             outputMessage(message, data, metaData);
