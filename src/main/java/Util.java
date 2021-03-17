@@ -21,11 +21,14 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.zip.GZIPInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Base64;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 
@@ -36,7 +39,7 @@ public class Util {
         GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
         StringBuilder resultString = new StringBuilder();
         int b = gzipInputStream.read();
-        while(b != -1){
+        while (b != -1) {
             resultString.append(((char) b));
             b = gzipInputStream.read();
         }
@@ -55,7 +58,8 @@ public class Util {
 
     public static String toJSON(List<Map<String, Object>> data) {
         Gson gson = new GsonBuilder().serializeNulls().create();
-        Type collectionType = new TypeToken<LinkedList<LinkedTreeMap<String, Object>>>(){}.getType();
+        Type collectionType = new TypeToken<LinkedList<LinkedTreeMap<String, Object>>>() {
+        }.getType();
         return gson.toJson(data, collectionType);
     }
 }
