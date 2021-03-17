@@ -28,7 +28,7 @@ public class Operator {
                 Boolean.parseBoolean(config.getConfigValue("compressed_input", "false")),
                 Boolean.parseBoolean(config.getConfigValue("compressed_output", "false"))
         );
-        Stream stream  = new Stream();
+        Stream stream = new Stream();
         stream.start(flatten);
     }
 }
