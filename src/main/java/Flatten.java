@@ -22,12 +22,7 @@ import org.infai.ses.senergy.operators.BaseOperator;
 import org.infai.ses.senergy.operators.Message;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.*;
 
 
 public class Flatten extends BaseOperator {
@@ -62,9 +57,11 @@ public class Flatten extends BaseOperator {
         try {
             String metaData = message.getInput("meta_data").getString();
             if (compressedInput) {
-                data = new Gson().fromJson(Util.decompress(message.getInput("data").getString()), new TypeToken<LinkedList<LinkedTreeMap<String, ?>>>(){}.getType());
+                data = new Gson().fromJson(Util.decompress(message.getInput("data").getString()), new TypeToken<LinkedList<LinkedTreeMap<String, ?>>>() {
+                }.getType());
             } else {
-                data = new Gson().fromJson(message.getInput("data").getString(), new TypeToken<LinkedList<LinkedTreeMap<String, ?>>>(){}.getType());
+                data = new Gson().fromJson(message.getInput("data").getString(), new TypeToken<LinkedList<LinkedTreeMap<String, ?>>>() {
+                }.getType());
             }
             System.out.println("received message with '" + data.size() + "' data points");
             for (Map<String, Object> msg : data) {
@@ -74,7 +71,7 @@ public class Flatten extends BaseOperator {
                             LinkedTreeMap<?, ?> itemData = (LinkedTreeMap<?, ?>) item;
                             String field = fieldBuilder.buildField(rootField, itemData);
                             fields.add(field);
-                            msg.put(field, (Integer) msg.getOrDefault(field , 0) + 1);
+                            msg.put(field, (Integer) msg.getOrDefault(field, 0) + 1);
                         }
                     }
                     msg.remove(rootField);
