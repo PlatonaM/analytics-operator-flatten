@@ -15,17 +15,16 @@
  */
 
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.reflect.TypeToken;
 import org.infai.ses.senergy.operators.BaseOperator;
 import org.infai.ses.senergy.operators.Message;
-import util.Deserializer;
-import util.Util;
 
 import java.io.IOException;
 import java.util.*;
+
+import static org.infai.ses.platonam.util.Compression.compress;
+import static org.infai.ses.platonam.util.Compression.decompress;
+import static org.infai.ses.platonam.util.Json.*;
 
 
 public class Flatten extends BaseOperator {
@@ -40,17 +39,17 @@ public class Flatten extends BaseOperator {
         this.compressedOutput = compressedOutput;
     }
 
-    private void outputMessage(Message message, List<Map<String, Object>> data, String metaData) {
+    private void outputMessage(Message message, List<Map<String, Object>> data, Map<String, Object> metaData) {
         if (compressedOutput) {
             try {
-                message.output("data", Util.compress(Util.toJSON(data)));
+                message.output("data", compress(toJSON(data)));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
-            message.output("data", Util.toJSON(data));
+            message.output("data", toJSON(data));
         }
-        message.output("meta_data", metaData);
+        message.output("meta_data", toJSON(metaData));
     }
 
     @Override
@@ -58,17 +57,11 @@ public class Flatten extends BaseOperator {
         List<Map<String, Object>> data;
         Set<String> fields = new HashSet<>();
         try {
-            String metaData = message.getInput("meta_data").getString();
-            GsonBuilder builder = new GsonBuilder();
-            builder.registerTypeAdapter(Map.class, new Deserializer.MapDeserializer());
-            builder.registerTypeAdapter(List.class, new Deserializer.ListDeserializer());
-            Gson gson = builder.create();
+            Map<String, Object> metaData = mapFromJson(message.getInput("meta_data").getString());
             if (compressedInput) {
-                data = gson.fromJson(Util.decompress(message.getInput("data").getString()), new TypeToken<List<Map<String, Object>>>() {
-                }.getType());
+                data = typeSafeMapListFromJson(decompress(message.getInput("data").getString()));
             } else {
-                data = gson.fromJson(message.getInput("data").getString(), new TypeToken<List<Map<String, Object>>>() {
-                }.getType());
+                data = typeSafeMapListFromJson(message.getInput("data").getString());
             }
             System.out.println("received message with '" + data.size() + "' data points");
             for (Map<String, Object> msg : data) {
@@ -89,6 +82,7 @@ public class Flatten extends BaseOperator {
                     msg.putIfAbsent(field, 0);
                 }
             }
+            metaData.put("sum_fields", fields);
             outputMessage(message, data, metaData);
         } catch (Throwable t) {
             System.out.println("error handling message:");
