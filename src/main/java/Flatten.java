@@ -85,6 +85,16 @@ public class Flatten extends BaseOperator {
                     msg.putIfAbsent(field, 0);
                 }
             }
+            Map<String, Object> defaultValues;
+            if (metaData.containsKey("default_values")) {
+                defaultValues = (Map<String, Object>) metaData.get("default_values");
+            } else {
+                defaultValues = new HashMap<>();
+            }
+            for (String field : fields) {
+                defaultValues.put(field, 0);
+            }
+            metaData.put("default_values", defaultValues);
             metaData.put("sum_fields", fields);
             logger.fine("generated " + fields.size() + " new fields");
             outputMessage(message, data, metaData);
