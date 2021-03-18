@@ -21,14 +21,17 @@ import org.infai.ses.senergy.operators.Message;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 
 import static org.infai.ses.platonam.util.Compression.compress;
 import static org.infai.ses.platonam.util.Compression.decompress;
 import static org.infai.ses.platonam.util.Json.*;
+import static org.infai.ses.platonam.util.Logger.getLogger;
 
 
 public class Flatten extends BaseOperator {
 
+    private static final Logger logger = getLogger(Flatten.class.getName());
     private final FieldBuilder fieldBuilder;
     private final boolean compressedInput;
     private final boolean compressedOutput;
@@ -63,7 +66,7 @@ public class Flatten extends BaseOperator {
             } else {
                 data = typeSafeMapListFromJson(message.getInput("data").getString());
             }
-            System.out.println("received message with '" + data.size() + "' data points");
+            logger.info("received message containing '" + data.size() + "' data points");
             for (Map<String, Object> msg : data) {
                 for (String rootField : fieldBuilder.rootFields()) {
                     if (msg.get(rootField) != null) {
@@ -83,9 +86,10 @@ public class Flatten extends BaseOperator {
                 }
             }
             metaData.put("sum_fields", fields);
+            logger.fine("generated " + fields.size() + " new fields");
             outputMessage(message, data, metaData);
         } catch (Throwable t) {
-            System.out.println("error handling message:");
+            logger.severe("error handling message:");
             t.printStackTrace();
         }
     }

@@ -15,6 +15,7 @@
  */
 
 
+import org.infai.ses.platonam.util.Logger;
 import org.infai.ses.senergy.operators.Config;
 import org.infai.ses.senergy.operators.Stream;
 import org.infai.ses.senergy.utils.ConfigProvider;
@@ -23,6 +24,7 @@ public class Operator {
 
     public static void main(String[] args) throws Exception {
         Config config = ConfigProvider.getConfig();
+        Logger.setup(config.getConfigValue("logging_level", "info"));
         Flatten flatten = new Flatten(
                 new FieldBuilder(config.getConfigValue("field_patterns", null)),
                 Boolean.parseBoolean(config.getConfigValue("compressed_input", "false")),
