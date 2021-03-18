@@ -60,7 +60,7 @@ public class Flatten extends BaseOperator {
         List<Map<String, Object>> data;
         Set<String> fields = new HashSet<>();
         try {
-            Map<String, Object> metaData = mapFromJson(message.getInput("meta_data").getString());
+            Map<String, Object> metaData = typeSafeMapFromJson(message.getInput("meta_data").getString());
             if (compressedInput) {
                 data = typeSafeMapListFromJson(decompress(message.getInput("data").getString()));
             } else {
