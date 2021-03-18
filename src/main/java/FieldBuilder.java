@@ -40,14 +40,14 @@ public class FieldBuilder {
     public String buildField(String rootField, Map<?, ?> data) {
         String field = patternMap.get(rootField);
         for (Object key : data.keySet()) {
-            String value;
-            if (data.get(key) instanceof Number) {
-                value = String.valueOf(data.get(key));
-                value = value.replaceAll("\\.\\d+", "");
-            } else {
-                value = String.valueOf(data.get(key));
-            }
-            field = field.replaceAll("\\{" + key + "}", value);
+//            String value;
+//            if (data.get(key) instanceof Number) {
+//                value = String.valueOf(data.get(key));
+//                value = value.replaceAll("\\.\\d+", "");
+//            } else {
+//                value = String.valueOf(data.get(key));
+//            }
+            field = field.replaceAll("\\{" + key + "}", String.valueOf(data.get(key)));
         }
         return field;
     }
