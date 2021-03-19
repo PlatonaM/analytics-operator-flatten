@@ -42,13 +42,9 @@ public class Flatten extends BaseOperator {
         this.compressedOutput = compressedOutput;
     }
 
-    private void outputMessage(Message message, List<Map<String, Object>> data, Map<String, Object> metaData) {
+    private void outputMessage(Message message, List<Map<String, Object>> data, Map<String, Object> metaData) throws IOException {
         if (compressedOutput) {
-            try {
-                message.output("data", compress(toJSON(data)));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            message.output("data", compress(toJSON(data)));
         } else {
             message.output("data", toJSON(data));
         }
