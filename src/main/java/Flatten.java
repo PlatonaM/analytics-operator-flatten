@@ -16,6 +16,7 @@
 
 
 import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
 import org.infai.ses.platonam.util.Compression;
 import org.infai.ses.platonam.util.Json;
 import org.infai.ses.senergy.operators.BaseOperator;
@@ -46,13 +47,16 @@ public class Flatten extends BaseOperator {
     private void outputMessage(Message message, List<Map<String, Object>> data, Map<String, Object> metaData) throws IOException {
         if (compressedOutput) {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            Json.toStream(data, Compression.compress(outputStream));
+            Json.toStream(new TypeToken<Map<String, Object>>() {
+            }.getType(), data, Compression.compress(outputStream));
             outputStream.close();
             message.output("data", outputStream.toString());
         } else {
-            message.output("data", Json.toString(data));
+            message.output("data", Json.toString(new TypeToken<List<Map<String, Object>>>() {
+            }.getType(), data));
         }
-        message.output("meta_data", Json.toString(metaData));
+        message.output("meta_data", Json.toString(new TypeToken<Map<String, Object>>() {
+        }.getType(), metaData));
     }
 
     @Override
@@ -60,12 +64,15 @@ public class Flatten extends BaseOperator {
         List<Map<String, Object>> data;
         Set<String> fields = new HashSet<>();
         try {
-            Map<String, Object> metaData = Json.typeSafeMapFromString(message.getInput("meta_data").getString());
+            Map<String, Object> metaData = Json.fromString(message.getInput("meta_data").getString(), new TypeToken<>() {
+            });
             if (compressedInput) {
                 InputStream inputStream = Compression.decompressToStream(message.getInput("data").getString());
-                data = Json.typeSafeMapListFromStream(inputStream);
+                data = Json.fromStreamToList(inputStream, new TypeToken<>() {
+                });
             } else {
-                data = Json.typeSafeMapListFromString(message.getInput("data").getString());
+                data = Json.fromString(message.getInput("data").getString(), new TypeToken<>() {
+                });
             }
             logger.info("received message containing '" + data.size() + "' data points");
             for (Map<String, Object> msg : data) {
