@@ -44,7 +44,7 @@ public class Flatten extends BaseOperator {
         this.compressedOutput = compressedOutput;
     }
 
-    private void outputMessage(Message message, List<Map<String, Object>> data, Map<String, Object> metaData) throws IOException {
+    private void outputMessage(Message message, List<Map<String, Object>> data, Map<String, Object> defaultValues) throws IOException {
         if (compressedOutput) {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             Json.toStream(new TypeToken<Map<String, Object>>() {
@@ -55,8 +55,8 @@ public class Flatten extends BaseOperator {
             message.output("data", Json.toString(new TypeToken<List<Map<String, Object>>>() {
             }.getType(), data));
         }
-        message.output("meta_data", Json.toString(new TypeToken<Map<String, Object>>() {
-        }.getType(), metaData));
+        message.output("default_values", Json.toString(new TypeToken<Map<String, Object>>() {
+        }.getType(), defaultValues));
     }
 
     @Override
@@ -64,8 +64,6 @@ public class Flatten extends BaseOperator {
         List<Map<String, Object>> data;
         Set<String> fields = new HashSet<>();
         try {
-            Map<String, Object> metaData = Json.fromString(message.getInput("meta_data").getString(), new TypeToken<>() {
-            });
             if (compressedInput) {
                 InputStream inputStream = Compression.decompressToStream(message.getInput("data").getString());
                 data = Json.fromStreamToList(inputStream, new TypeToken<>() {
@@ -93,19 +91,12 @@ public class Flatten extends BaseOperator {
                     msg.putIfAbsent(field, 0);
                 }
             }
-//            Map<String, Object> defaultValues;
-//            if (metaData.containsKey("default_values")) {
-//                defaultValues = (Map<String, Object>) metaData.get("default_values");
-//            } else {
-//                defaultValues = new HashMap<>();
-//            }
-//            for (String field : fields) {
-//                defaultValues.put(field, 0);
-//            }
-//            metaData.put("default_values", defaultValues);
-            metaData.put("sum_fields", fields);
+            Map<String, Object> defaultValues = new HashMap<>();
+            for (String field : fields) {
+                defaultValues.put(field, 0);
+            }
             logger.fine("generated " + fields.size() + " new fields");
-            outputMessage(message, data, metaData);
+            outputMessage(message, data, defaultValues);
         } catch (Throwable t) {
             logger.severe("error handling message:");
             t.printStackTrace();
@@ -115,7 +106,6 @@ public class Flatten extends BaseOperator {
     @Override
     public Message configMessage(Message message) {
         message.addInput("data");
-        message.addInput("meta_data");
         return message;
     }
 
