@@ -25,11 +25,7 @@ public class Operator {
     public static void main(String[] args) throws Exception {
         Config config = ConfigProvider.getConfig();
         Logger.setup(config.getConfigValue("logging_level", "info"));
-        Flatten flatten = new Flatten(
-                new FieldBuilder(config.getConfigValue("field_patterns", null)),
-                Boolean.parseBoolean(config.getConfigValue("compressed_input", "false")),
-                Boolean.parseBoolean(config.getConfigValue("compressed_output", "false"))
-        );
+        Flatten flatten = new Flatten(new FieldBuilder(config.getConfigValue("field_patterns", null)));
         Stream stream = new Stream();
         stream.start(flatten);
     }
