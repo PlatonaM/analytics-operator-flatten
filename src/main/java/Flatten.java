@@ -18,6 +18,7 @@
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import org.infai.ses.platonam.util.Json;
+import org.infai.ses.senergy.exceptions.NoValueException;
 import org.infai.ses.senergy.operators.BaseOperator;
 import org.infai.ses.senergy.operators.Message;
 
@@ -32,9 +33,11 @@ public class Flatten extends BaseOperator {
 
     private static final Logger logger = getLogger(Flatten.class.getName());
     private final FieldBuilder fieldBuilder;
+    private final Set<String> relayInputs;
 
-    public Flatten(FieldBuilder fieldBuilder) {
+    public Flatten(FieldBuilder fieldBuilder, String relayInputs) {
         this.fieldBuilder = fieldBuilder;
+        this.relayInputs = relayInputs != null ? Json.fromString(relayInputs, new TypeToken<>(){}) : Collections.emptySet();
     }
 
     private void outputMessage(Message message, Map<String, Object> flatData, Map<String, Object> defaultValues) throws IOException {
@@ -42,6 +45,13 @@ public class Flatten extends BaseOperator {
         }.getType(), flatData));
         message.output("default_values", Json.toString(new TypeToken<Map<String, Object>>() {
         }.getType(), defaultValues));
+        for (String inputName: relayInputs) {
+            try {
+                message.output(inputName, message.getInput(inputName).getValue(Object.class));
+            } catch (NoValueException e) {
+                message.output(inputName, null);
+            }
+        }
     }
 
     @Override
@@ -76,6 +86,9 @@ public class Flatten extends BaseOperator {
     @Override
     public Message configMessage(Message message) {
         message.addInput("data");
+        for (String inputName : relayInputs) {
+            message.addInput(inputName);
+        }
         return message;
     }
 
